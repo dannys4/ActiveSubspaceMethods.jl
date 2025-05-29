@@ -4,7 +4,7 @@ using ArgCheck, Random, LinearAlgebra, Statistics, StatsFuns, FastGaussQuadratur
 
 
 abstract type AbstractActiveSubspaces end
-abstract type AbstractActiveSubspacesXX<:AbstractActiveSubspaces end
+abstract type AbstractActiveSubspacesXX <: AbstractActiveSubspaces end
 abstract type AbstractActiveSubspacesInput end
 abstract type AbstractActiveSubspacesOutput end
 

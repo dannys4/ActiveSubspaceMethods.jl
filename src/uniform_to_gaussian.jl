@@ -12,20 +12,23 @@ struct GaussianizedUniformInputFunction{F<:Function,V<:AbstractVector{<:NTuple{2
     end
 end
 
-function (fcn::GaussianizedUniformInputFunction)(x)
+function (fcn!::GaussianizedUniformInputFunction)(x)
     unif_pt = map(eachindex(fcn.bounds)) do i
         return normcdf(x[i]) * (fcn.bounds[i][2] - fcn.bounds[i][1]) + fcn.bounds[i][1]
     end
-    return fcn.f(unif_pt)
+    grad_eval = similar(unif_pt)
+    return fcn!.f(grad_eval,unif_pt), grad_eval
 end
 
-function (fcn!::GaussianizedUniformInputFunction)(grad_eval,x)
+function (fcn!::GaussianizedUniformInputFunction)(grad_eval, x)
     unif_pt = map(eachindex(fcn!.bounds)) do i
         return normcdf(x[i]) * (fcn!.bounds[i][2] - fcn!.bounds[i][1]) + fcn!.bounds[i][1]
     end
-    eval_pt = fcn!.f(grad_eval,unif_pt)
+    eval_pt = fcn!.f(grad_eval, unif_pt)
     for dim_idx in eachindex(fcn!.bounds)
-        grad_eval[dim_idx] *= normpdf(x[dim_idx]) * (fcn!.bounds[i][2] - fcn!.bounds[i][1]) + fcn!.bounds[i][1]
+        grad_eval[dim_idx] *=
+            normpdf(x[dim_idx]) * (fcn!.bounds[i][2] - fcn!.bounds[i][1]) +
+            fcn!.bounds[i][1]
     end
     return eval_pt
 end

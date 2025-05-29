@@ -69,6 +69,8 @@ end
 
 function (as::ActiveSubspacesXXGenEig)()
     vals, vecs = eigen(as.C_AS, as.C_ZZ)
-    vecs_ortho = sqrt(as.C_ZZ)*vecs
+    sqrt_ZZ = sqrt(as.C_ZZ)
+    @assert all(isreal, sqrt_ZZ) "We require all positive eigenvalues of C_ZZ"
+    vecs_ortho = sqrt_ZZ*vecs
     ActiveSubspacesOutput(vals, vecs_ortho)
 end

@@ -11,4 +11,4 @@ include("methods.jl")
 include("bounds.jl")
 include("uniform_to_gaussian.jl")
 
-end
+end # ActiveSubspaceMethods

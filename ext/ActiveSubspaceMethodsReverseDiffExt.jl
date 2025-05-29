@@ -1,7 +1,8 @@
-using ActiveSubspaces, ReverseDiff
+module ActiveSubspaceMethodsReverseDiffExt
+using ActiveSubspaces, ReverseDiff, Random
+export GaussianMonteCarlo_ActiveSubspacesInputAD
 
-
-function GaussianMonteCarlo_ActiveSubspacesInput(fcn, d::Int, N::Int; rng=Random.GLOBAL_RNG)
+function GaussianMonteCarlo_ActiveSubspacesInputAD(fcn, d::Int, N::Int; rng=Random.GLOBAL_RNG)
     grad_f = Matrix{Float64}(undef, d, N)
     eval_f = Vector{Float64}(undef, N)
 
@@ -21,3 +22,5 @@ function GaussianMonteCarlo_ActiveSubspacesInput(fcn, d::Int, N::Int; rng=Random
     mean_f = mean(eval_f)
     ActiveSubspacesInput(mean_f, eval_f .- mean_f, grad_f, samples)
 end
+
+end # ActiveSubspaceMethodsReverseDiffExt

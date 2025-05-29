@@ -1,3 +1,4 @@
+module ActiveSubspaceMethodsManoptExt
 using ActiveSubspaceMethods
 
 struct ActiveSubspacesXXManopt{M<:AbstractMatrix}<:AbstractActiveSubspacesXX
@@ -21,3 +22,5 @@ function ActiveSubspacesXXManopt(inp::ActiveSubspacesInput)
     end
     ActiveSubspacesXXManopt(C_AS, C_ZZ)
 end
+
+end # ActiveSubspaceMethodsManoptExt

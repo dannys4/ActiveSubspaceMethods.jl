@@ -6,7 +6,7 @@ struct ActiveSubspaces{M<:Hermitian}<:AbstractActiveSubspaces
     function ActiveSubspaces(C_AS::Matrix)
         d = size(C_AS, 1)
         @argcheck size(C_AS, 2) == d
-        @argcheck issymmetric(C_AS)
+        @argcheck norm(C_AS - C_AS')/norm(C_AS) <= 1e-15
         H_C_AS = Hermitian(C_AS)
         new{typeof(H_C_AS)}(H_C_AS, d)
     end
@@ -18,7 +18,7 @@ struct ModifiedActiveSubspaces{M<:Hermitian}
     function ModifiedActiveSubspaces(C_MAS::Matrix)
         d = size(C_MAS, 1)
         @argcheck size(C_MAS, 2) == d
-        @argcheck issymmetric(C_MAS)
+        @argcheck norm(C_MAS - C_MAS')/norm(C_MAS) <= 1e-15
         H_C_MAS = Hermitian(C_MAS)
         new{typeof(H_C_MAS)}(H_C_MAS, d)
     end
@@ -32,28 +32,36 @@ struct ActiveSubspacesXXGenEig{M<:AbstractMatrix}<:AbstractActiveSubspacesXX
         d = size(C_AS, 1)
         @argcheck size(C_AS) == (d, d)
         @argcheck size(C_ZZ) == (d, d)
-        @argcheck issymmetric(C_AS)
+        @argcheck norm(C_AS - C_AS')/norm(C_AS) < 1e-15
         @argcheck norm(C_ZZ - C_ZZ')/norm(C_ZZ) < 1e-15
         new{typeof(C_AS)}(C_AS, C_ZZ, d)
     end
 end
 
-function ActiveSubspaces(inp::ActiveSubspacesInput)
-    C_AS = inp.grad_f*(inp.grad_f') / N
+function ActiveSubspaces(inp::AbstractActiveSubspacesInput)
+    C_AS = sum(inp) do (_,pt_grad,_,wt)
+        wt*pt_grad*pt_grad'
+    end
     ActiveSubspaces(C_AS)
 end
 
-function ActiveSubspacesXXGenEig(inp::ActiveSubspacesInput)
-    C_AS = inp.grad_f*(inp.grad_f') / N
-    C_ZZ = mean(1:N) do k
-        (inp.eval_f[k]*inp.samples[:, k])*(inp.samples[:, k]')
+function ActiveSubspacesXXGenEig(inp::AbstractActiveSubspacesInput)
+    C_AS = sum(inp) do (_,pt_grad,_,wt)
+        wt*pt_grad*pt_grad'
+    end
+    C_ZZ = sum(inp) do (pt_eval,_,pt,wt)
+        wt*pt_eval*pt*pt'
     end
     ActiveSubspacesXXGenEig(C_AS, C_ZZ)
 end
 
-function ModifiedActiveSubspaces(inp::ActiveSubspacesInput)
-    C_MAS = inp.grad_f*(inp.grad_f') / N
-    mean_grad = mean(inp.grad_f; dims=2)
+function ModifiedActiveSubspaces(inp::AbstractActiveSubspacesInput)
+    C_MAS = sum(inp) do (_,pt_grad,_,wt)
+        wt*pt_grad*pt_grad'
+    end
+    mean_grad = mean(inp) do (_,pt_grad,_,wt)
+        wt*pt_grad
+    end
     mul!(C_MAS, mean_grad, mean_grad', 0.5, 0.5)
     ModifiedActiveSubspaces(C_MAS)
 end

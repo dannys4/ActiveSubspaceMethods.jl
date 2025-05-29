@@ -18,3 +18,14 @@ function (fcn::GaussianizedUniformInputFunction)(x)
     end
     return fcn.f(unif_pt)
 end
+
+function (fcn!::GaussianizedUniformInputFunction)(grad_eval,x)
+    unif_pt = map(eachindex(fcn!.bounds)) do i
+        return normcdf(x[i]) * (fcn!.bounds[i][2] - fcn!.bounds[i][1]) + fcn!.bounds[i][1]
+    end
+    eval_pt = fcn!.f(grad_eval,unif_pt)
+    for dim_idx in eachindex(fcn!.bounds)
+        grad_eval[dim_idx] *= normpdf(x[dim_idx]) * (fcn!.bounds[i][2] - fcn!.bounds[i][1]) + fcn!.bounds[i][1]
+    end
+    return eval_pt
+end

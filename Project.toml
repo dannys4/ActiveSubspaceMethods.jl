@@ -16,19 +16,21 @@ StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 [weakdeps]
 Manopt = "0fc0a36d-df90-57f3-8f93-d78a9fc72bb5"
 Manifolds = "1cead3c2-87b3-11e9-0ccd-23c62b72b94e"
+ManifoldsBase = "3362f125-f0bb-47a3-aa74-596ffd7ef2fb"
 
 [extensions]
 ActiveSubspaceMethodsManoptExt = ["Manopt","Manifolds"]
 
 [compat]
 ArgCheck = "2.5.0"
-DifferentiationInterface = "0.7.0"
+DifferentiationInterface = "0.6"
 FastGaussQuadrature = "1.0.2"
 LinearAlgebra = "1.10"
 Random = "1.10"
 Reexport = "1.2.2"
 Statistics = "1.10"
 StatsFuns = "1.5.0"
+ManifoldsBase = "1"
 julia = "1.10"
 
 [extras]

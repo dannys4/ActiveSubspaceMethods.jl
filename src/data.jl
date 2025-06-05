@@ -33,8 +33,8 @@ function ActiveSubspacesInput(mean_f, eval_f, grad_f, points, weights::AbstractV
     @argcheck length(eval_f) == N DimensionMismatch
     @argcheck size(grad_f) == (d, N) DimensionMismatch
     @argcheck length(weights) == N DimensionMismatch
-    @argcheck approx(sum(weights), 1)
-    return InputWeighted(mean_f, eval_f, grad_f, points, d, N, weights)
+    @argcheck isapprox(sum(weights), 1)
+    return InputWeighted(mean_f, eval_f, grad_f, points, weights, d, N)
 end
 
 function Base.getindex(inp::InputUnweighted, point_idx::Int)
@@ -129,13 +129,13 @@ function tensor_prod_quad(
 end
 
 function QuadratureActiveSubspacesInput(
-    eval_grad_fcn!, d::Int, tensor_order::Int; quad_fcn1d=gaussprobhermite, verbose=true
+    eval_grad_fcn!, d::Int, tensor_order::Int; quad_fcn1d=gaussprobhermite, verbose=false
 )
     pts1d, wts1d = quad_fcn1d(tensor_order)
     pts_wts_zip_1d = ntuple(_ -> (pts1d, wts1d), d)
     pts, wts = tensor_prod_quad(pts_wts_zip_1d)
     verbose && @info "Using $(length(wts)) quadrature points"
-    return QuadratureActiveSubspacesInput(eval_grad_fcn!, pts, wts)
+    return ActiveSubspacesInput(eval_grad_fcn!, pts, wts)
 end
 
 function QuadratureActiveSubspacesInput(
@@ -149,5 +149,5 @@ function QuadratureActiveSubspacesInput(
     end
     pts, wts = tensor_prod_quad(pts_wts_zip_1d)
     verbose && @info "Using $(length(wts)) quadrature points"
-    return QuadratureActiveSubspacesInput(eval_grad_fcn!, pts, wts)
+    return ActiveSubspacesInput(eval_grad_fcn!, pts, wts)
 end

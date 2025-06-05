@@ -1,6 +1,7 @@
 module ActiveSubspaceMethodsManoptExt
 using ActiveSubspaceMethods
-using ManOpt, Manifolds, ArgCheck
+using ActiveSubspaceMethods: AbstractActiveSubspacesXX, AbstractActiveSubspacesInput
+using Manopt, Manifolds, ArgCheck, LinearAlgebra
 
 struct ActiveSubspacesXXManopt{M<:AbstractMatrix} <: AbstractActiveSubspacesXX
     C_AS::M
@@ -16,7 +17,7 @@ struct ActiveSubspacesXXManopt{M<:AbstractMatrix} <: AbstractActiveSubspacesXX
     end
 end
 
-function ActiveSubspacesXXManopt(inp::ActiveSubspacesInput)
+function ActiveSubspacesXXManopt(inp::AbstractActiveSubspacesInput)
     C_AS = sum(inp) do (_, pt_grad, _, wt)
         wt * pt_grad * pt_grad'
     end
@@ -27,18 +28,18 @@ function ActiveSubspacesXXManopt(inp::ActiveSubspacesInput)
 end
 
 struct ActiveSubspacesXXManoptOutput{M<:Hermitian}
-    as::ActiveSubspacesXXManopt
+    as::ActiveSubspacesXXManopt{M}
     start_mat::Matrix{Float64}
     U_perps::Dict{Int,Matrix{Float64}}
     d::Int
-    function ActiveSubspacesXXManoptOutput(as::ActiveSubspacesXXManopt)
+    function ActiveSubspacesXXManoptOutput(as::ActiveSubspacesXXManopt{_M}) where {_M}
         (; C_AS, C_ZZ) = as
         d = size(C_AS, 1)
         @argcheck size(C_AS, 2) == d DimensionMismatch
         @argcheck size(C_ZZ) == (d, d) DimensionMismatch
         _, vecs = eigen(C_AS)
         U_perps = Dict{Int,Matrix{Float64}}()
-        return new(as, vecs, U_perps)
+        return new{_M}(as, vecs, U_perps)
     end
 end
 

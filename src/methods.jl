@@ -1,4 +1,4 @@
-export ActiveSubspaces, ModifiedActiveSubspaces, ActiveSubspacesXXGenEig, ActiveSubspacesXXManopt
+export ActiveSubspaces, ModifiedActiveSubspaces, ActiveSubspacesXXManopt
 
 struct ActiveSubspaces{M<:Hermitian} <: AbstractActiveSubspaces
     C_AS::M
@@ -38,6 +38,11 @@ struct ActiveSubspacesXXGenEig{M<:AbstractMatrix} <: AbstractActiveSubspacesXX
     end
 end
 
+"""
+    ActiveSubspaces(input::AbstractActiveSubspacesInput)
+Type to represent traditional Active Subspaces method
+[[Russi, 2010](https://www.proquest.com/dissertations-theses/uncertainty-quantification-with-experimental-data/docview/749356529/se-2?accountid=12492)].
+"""
 function ActiveSubspaces(inp::AbstractActiveSubspacesInput)
     C_AS = sum(inp) do (_, pt_grad, _, wt)
         wt * pt_grad * pt_grad'
@@ -55,6 +60,11 @@ function ActiveSubspacesXXGenEig(inp::AbstractActiveSubspacesInput)
     return ActiveSubspacesXXGenEig(C_AS, C_ZZ)
 end
 
+"""
+    ModifiedActiveSubspaces(input::AbstractActiveSubspacesInput)
+Type to represent Modified Active Subspaces method
+[[Lee, 2019](https://doi.org/10.1137/17M1140662)].
+"""
 function ModifiedActiveSubspaces(inp::AbstractActiveSubspacesInput)
     C_MAS = sum(inp) do (_, pt_grad, _, wt)
         wt * pt_grad * pt_grad'
@@ -83,7 +93,7 @@ function (as::ActiveSubspacesXXGenEig)()
 end
 
 """
-    ActiveSubspacesXXManopt
-Only usable when Manopt and Manifolds are installed.
+    ActiveSubspacesXXManopt(input::AbstractActiveSubspacesInput)
+Type to represent Active Subspaces ++, proposed in [Li et al., 2025]. Only usable when Manopt and Manifolds are installed.
 """
 function ActiveSubspacesXXManopt end;

@@ -4,6 +4,16 @@ struct ADFunctionWrapper{F<:Function,P,B<:DifferentiationInterface.AbstractADTyp
     backend::B
 end
 
+"""
+    ActiveSubspaceMethods.ADFunctionWrapper(fcn, d, backend; [init_space])
+Wraps the evaluation of a **pure Julia** function `fcn` to use automatic differentiation.
+
+# Arguments
+- `fcn(z::AbstractVector)::Float64` function we want to reduce dimension of
+- `d::Int` dimension of input
+- `backend::ADTypes.AbstractADType` Backend for autodiff (e.g., ReverseDiff, Enzyme, etc.). Must be explicitly installed!
+- `init_space::Vector` values to prepare the memory spaces for autodiff, default `zeros(d)`.
+"""
 function ADFunctionWrapper(
     fcn::F, d::Int, backend::B; init_space=zeros(d)
 ) where {F<:Function,B<:DifferentiationInterface.AbstractADType}

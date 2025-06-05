@@ -101,8 +101,21 @@ function ActiveSubspacesInput(
     )
 end
 
+"""
+    MCActiveSubspacesInput(eval_grad_fcn!, d, N; [rand_fcn, rng, corrected])
+Construct input for an active subspace method from a function (with inplace gradient)
+and Monte Carlo integration.
+
+# Arguments
+- `eval_grad_fcn!(grad, z)` Returns real-valued function and puts gradient of this function in `grad`
+- `d::Int` dimension
+- `N::Int` number of samples
+- `rand_fcn(rng, d, N)` function to sample random numbers using `rng`, default `randn`
+- `rng::AbstractRNG` Random number generator
+- `corrected::Bool` Use corrected Monte Carlo estimators downstream, default `true`
+"""
 function MCActiveSubspacesInput(
-    eval_grad_fcn!, d::Int, N::Int; rand_fcn=randn, rng=Random.GLOBAL_RNG, corrected=true
+    eval_grad_fcn!, d::Int, N::Int; rand_fcn=randn, rng::AbstractRNG=Random.GLOBAL_RNG, corrected::Bool=true
 )
     return ActiveSubspacesInput(eval_grad_fcn!, rand_fcn(rng, d, N); corrected)
 end
@@ -133,6 +146,18 @@ function tensor_prod_quad(
     return points, weights
 end
 
+"""
+    QuadratureActiveSubspacesInput(eval_grad_fcn!, d, tensor_order, [quad_fcn1d, verbose])
+Construct input for an active subspace method from a function (with inplace gradient)
+and Monte Carlo integration.
+
+# Arguments
+- `eval_grad_fcn!(grad, z)` Returns real-valued function and puts gradient of this function in `grad`
+- `d::Int` dimension
+- `tensor_order::Int` number of one-dimensional quadrature points, will give `tensor_order^d` quadrature points
+- `quad_fcn1d(order)::Tuple{Vector,Vector}` One-dimensional quadrature, defaults to normalized Gauss-Hermite
+- `verbose::Bool` Whether to print the number of quadrature points.
+"""
 function QuadratureActiveSubspacesInput(
     eval_grad_fcn!, d::Int, tensor_order::Int; quad_fcn1d=gaussprobhermite, verbose=false
 )
@@ -143,6 +168,17 @@ function QuadratureActiveSubspacesInput(
     return ActiveSubspacesInput(eval_grad_fcn!, pts, wts)
 end
 
+"""
+    QuadratureActiveSubspacesInput(eval_grad_fcn!, d, tensor_order, [quad_fcn1d, verbose])
+Construct input for an active subspace method from a function (with inplace gradient)
+and Monte Carlo integration.
+
+# Arguments
+- `eval_grad_fcn!(grad, z)` Returns real-valued function and puts gradient of this function in `grad`
+- `tensor_orders::NTuple{d,Int}` number of one-dimensional quadrature points for each dimension, will give number of quad points as product of these orders
+- `quad_fcn1d(order)::Tuple{Vector,Vector}` One-dimensional quadrature, defaults to normalized Gauss-Hermite
+- `verbose::Bool` Whether to print the number of quadrature points.
+"""
 function QuadratureActiveSubspacesInput(
     eval_grad_fcn!, tensor_orders::NTuple{d,Int}; quad_fcns1d=gaussprobhermite, verbose=true
 ) where {d}

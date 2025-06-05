@@ -1,5 +1,14 @@
 export GaussianizedUniformInputFunction
 
+"""
+    GaussianizedUniformInputFunction(fcn!, bounds; [test_eval])
+Take a function that we wish to minimize L2 error w.r.t. uniform measure and transform it to be w.r.t. GaussianizedUniformInputFunction
+
+# Arguments
+- `fcn!(grad, z)::Float64` Returns function eval at `z` and puts function gradient at `z` into `grad`
+- `bounds::AbstractVector{<:NTuple{2}}` A sequence of (lower, upper) bounds that is as long as the number of inputs.
+- `test_eval::Bool` Whether to test function eval when constructing this functor, default `true`.
+"""
 struct GaussianizedUniformInputFunction{F<:Function,V<:AbstractVector{<:NTuple{2}}}
     f::F
     bounds::V

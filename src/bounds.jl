@@ -1,5 +1,9 @@
 export AS_bound, ASXX_bound
 
+"""
+    ASXX_bound(as::AbstractActiveSubspacesXX, U_perp::AbstractMatrix)
+Evaluate the active subspaces++ bound using the **perp** subspace.
+"""
 function ASXX_bound(as::AbstractActiveSubspacesXX, U_perp::AbstractMatrix)
     d,r = size(U_perp)
     @argcheck size(as.C_AS,1) == d DimensionMismatch
@@ -11,6 +15,7 @@ function ASXX_bound(as::AbstractActiveSubspacesXX, U_perp::AbstractMatrix)
     end
     return as_bd
 end
+
 
 function AS_bound(as::AbstractActiveSubspaces, U_perp::AbstractMatrix)
     d = size(as.C_AS,1)

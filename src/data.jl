@@ -72,7 +72,7 @@ function ActiveSubspacesOutput(eig::Union{Eigen,GeneralizedEigen})
     return ActiveSubspacesOutput(vals, vecs)
 end
 
-(as::ActiveSubspacesOutput)(r::Int) = (as.vals[r], as.vecs[:, 1:r])
+(as::ActiveSubspacesOutput)(r::Int) = as.vecs[:, r+1:end]
 
 function ActiveSubspacesInput(
     eval_grad_fcn!,
@@ -90,7 +90,12 @@ function ActiveSubspacesInput(
         evals[pt_idx] = eval_grad_fcn!(grad_out_tmp, pt)
         grads[:, pt_idx] .= grad_out_tmp
     end
-    mean_fcn = mean(evals)
+    mean_fcn = 0.
+    if isnothing(weights)
+        mean_fcn = mean(evals)
+    else
+        mean_fcn = evals'weights
+    end
     return ActiveSubspacesInput(
         mean_fcn, evals .- mean_fcn, grads, points, weights; kwargs...
     )

@@ -8,6 +8,7 @@ struct InputUnweighted <: AbstractActiveSubspacesInput
     points::Matrix{Float64}
     d::Int
     N::Int
+    corrected::Bool
 end
 
 struct InputWeighted <: AbstractActiveSubspacesInput
@@ -20,34 +21,38 @@ struct InputWeighted <: AbstractActiveSubspacesInput
     N::Int
 end
 
-function ActiveSubspacesInput(mean_f, eval_f, grad_f, points, ::Nothing)
+function ActiveSubspacesInput(mean_f, eval_f, grad_f, points, ::Nothing; corrected=true)
     d, N = size(points)
     @argcheck length(eval_f) == N DimensionMismatch
     @argcheck size(grad_f) == (d, N) DimensionMismatch
-    return InputUnweighted(mean_f, eval_f, grad_f, points, d, N)
+    return InputUnweighted(mean_f, eval_f, grad_f, points, d, N, corrected)
 end
 
-function ActiveSubspacesInput(mean_f, eval_f, grad_f, points, weights::AbstractVector)
+function ActiveSubspacesInput(mean_f, eval_f, grad_f, points, weights::AbstractVector; _...)
     d, N = size(points)
     @argcheck length(eval_f) == N DimensionMismatch
     @argcheck size(grad_f) == (d, N) DimensionMismatch
     @argcheck length(weights) == N DimensionMismatch
-    @argcheck approx(sum(weights), 1)
-    return InputWeighted(mean_f, eval_f, grad_f, points, d, N, weights)
+    @argcheck isapprox(sum(weights), 1)
+    return InputWeighted(mean_f, eval_f, grad_f, points, weights, d, N)
 end
 
 function Base.getindex(inp::InputUnweighted, point_idx::Int)
     @argcheck point_idx > 0 && point_idx <= inp.N
-    return inp.eval_f[point_idx],
-    @view(inp.grad_f[:, point_idx]), @view(inp.points[:, point_idx]),
-    1 / inp.N
+    eval_f = inp.eval_f[point_idx]
+    grad_f = @view inp.grad_f[:, point_idx]
+    point_f = @view inp.points[:, point_idx]
+    weight = inp.corrected ? 1 / (inp.N - 1) : 1 / inp.N
+    return eval_f, grad_f, point_f, weight
 end
 
 function Base.getindex(inp::InputWeighted, point_idx::Int)
     @argcheck point_idx > 0 && point_idx <= inp.N
-    return inp.eval_f[point_idx],
-    @view(inp.grad_f[:, point_idx]), @view(inp.points[:, point_idx]),
-    inp.weights[point_idx]
+    eval_f = inp.eval_f[point_idx]
+    grad_f = @view inp.grad_f[:, point_idx]
+    point_f = @view inp.points[:, point_idx]
+    weight = inp.weights[point_idx]
+    return eval_f, grad_f, point_f, weight
 end
 
 function Base.iterate(inp::AbstractActiveSubspacesInput, state::Int=1)
@@ -67,12 +72,13 @@ function ActiveSubspacesOutput(eig::Union{Eigen,GeneralizedEigen})
     return ActiveSubspacesOutput(vals, vecs)
 end
 
-(as::ActiveSubspacesOutput)(r::Int) = (as.vals[r], as.vecs[:, 1:r])
+(as::ActiveSubspacesOutput)(r::Int) = as.vecs[:, r+1:end]
 
 function ActiveSubspacesInput(
     eval_grad_fcn!,
     points::AbstractMatrix{Float64},
-    weights::Union{<:AbstractVector{Float64},Nothing}=nothing,
+    weights::Union{<:AbstractVector{Float64},Nothing}=nothing;
+    kwargs...,
 )
     d, N = size(points)
     @argcheck isnothing(weights) || N == length(weights) DimensionMismatch
@@ -84,14 +90,21 @@ function ActiveSubspacesInput(
         evals[pt_idx] = eval_grad_fcn!(grad_out_tmp, pt)
         grads[:, pt_idx] .= grad_out_tmp
     end
-    mean_fcn = mean(evals)
-    return ActiveSubspacesInput(mean_fcn, evals .- mean_fcn, grads, points, weights)
+    mean_fcn = 0.
+    if isnothing(weights)
+        mean_fcn = mean(evals)
+    else
+        mean_fcn = evals'weights
+    end
+    return ActiveSubspacesInput(
+        mean_fcn, evals .- mean_fcn, grads, points, weights; kwargs...
+    )
 end
 
 function MCActiveSubspacesInput(
-    eval_grad_fcn!, d::Int, N::Int; rand_fcn=randn, rng=Random.GLOBAL_RNG
+    eval_grad_fcn!, d::Int, N::Int; rand_fcn=randn, rng=Random.GLOBAL_RNG, corrected=true
 )
-    return ActiveSubspacesInput(eval_grad_fcn!, rand_fcn(rng, d, N))
+    return ActiveSubspacesInput(eval_grad_fcn!, rand_fcn(rng, d, N); corrected)
 end
 
 gaussprobhermite(N::Int) = gausshermite(N; normalize=true)
@@ -121,13 +134,13 @@ function tensor_prod_quad(
 end
 
 function QuadratureActiveSubspacesInput(
-    eval_grad_fcn!, d::Int, tensor_order::Int; quad_fcn1d=gaussprobhermite, verbose=true
+    eval_grad_fcn!, d::Int, tensor_order::Int; quad_fcn1d=gaussprobhermite, verbose=false
 )
     pts1d, wts1d = quad_fcn1d(tensor_order)
     pts_wts_zip_1d = ntuple(_ -> (pts1d, wts1d), d)
     pts, wts = tensor_prod_quad(pts_wts_zip_1d)
     verbose && @info "Using $(length(wts)) quadrature points"
-    return QuadratureActiveSubspacesInput(eval_grad_fcn!, pts, wts)
+    return ActiveSubspacesInput(eval_grad_fcn!, pts, wts)
 end
 
 function QuadratureActiveSubspacesInput(
@@ -141,5 +154,5 @@ function QuadratureActiveSubspacesInput(
     end
     pts, wts = tensor_prod_quad(pts_wts_zip_1d)
     verbose && @info "Using $(length(wts)) quadrature points"
-    return QuadratureActiveSubspacesInput(eval_grad_fcn!, pts, wts)
+    return ActiveSubspacesInput(eval_grad_fcn!, pts, wts)
 end

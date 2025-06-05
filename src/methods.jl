@@ -1,4 +1,4 @@
-export ActiveSubspaces, ModifiedActiveSubspaces, ActiveSubspacesXXGenEig
+export ActiveSubspaces, ModifiedActiveSubspaces, ActiveSubspacesXXGenEig, ActiveSubspacesXXManopt
 
 struct ActiveSubspaces{M<:Hermitian} <: AbstractActiveSubspaces
     C_AS::M
@@ -66,7 +66,6 @@ function ModifiedActiveSubspaces(inp::AbstractActiveSubspacesInput)
     return ModifiedActiveSubspaces(C_MAS)
 end
 
-
 function (as::ActiveSubspaces)()
     return ActiveSubspacesOutput(eigen(as.C_AS))
 end
@@ -82,3 +81,9 @@ function (as::ActiveSubspacesXXGenEig)()
     vecs_ortho = sqrt_ZZ * vecs
     return ActiveSubspacesOutput(vals, vecs_ortho)
 end
+
+"""
+    ActiveSubspacesXXManopt
+Only usable when Manopt and Manifolds are installed.
+"""
+function ActiveSubspacesXXManopt end;

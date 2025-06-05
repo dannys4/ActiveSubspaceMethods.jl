@@ -17,7 +17,7 @@ function (fcn!::GaussianizedUniformInputFunction)(x)
         return normcdf(x[i]) * (fcn.bounds[i][2] - fcn.bounds[i][1]) + fcn.bounds[i][1]
     end
     grad_eval = similar(unif_pt)
-    return fcn!.f(grad_eval,unif_pt), grad_eval
+    return fcn!.f(grad_eval, unif_pt), grad_eval
 end
 
 function (fcn!::GaussianizedUniformInputFunction)(grad_eval, x)

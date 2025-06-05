@@ -63,7 +63,7 @@ end
 function (out::ActiveSubspacesXXManoptOutput)(
     r::Int; start_mat=nothing, manopt_opt=quasi_Newton
 )
-    @argcheck r > 0 && r <= out.d
+    @argcheck r > 0 && r <= out.d BoundsError
     U_perp = get(out.U_perps, r, nothing)
     isnothing(U_perp) || return U_perp
     U_start = isnothing(start_mat) ? out.start_mat[:, 1:r] : start_mat

@@ -7,4 +7,7 @@ using Test
     @testset "Uniform regression" begin
         include("uniform.jl")
     end
+    @testset "Utilities" begin
+        include("utils.jl")
+    end
 end

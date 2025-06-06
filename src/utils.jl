@@ -17,7 +17,7 @@ function create_Ur(U_perp, initial_guess=nothing, rng::AbstractRNG = Random.GLOB
 	@argcheck norm(I - U_perp'U_perp)/norm(I(perp)) < 1e-14
     r = d - perp
     A = isnothing(initial_guess) ? randn(rng, d, r) : initial_guess
-    return make_orthogonal((I - U_perp*U_perp')*A)
+    return orthogonalize((I - U_perp*U_perp')*A)
 end
 
 """

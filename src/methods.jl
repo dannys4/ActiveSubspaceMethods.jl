@@ -69,10 +69,10 @@ function ModifiedActiveSubspaces(inp::AbstractActiveSubspacesInput)
     C_MAS = sum(inp) do (_, pt_grad, _, wt)
         wt * pt_grad * pt_grad'
     end
-    mean_grad = mean(inp) do (_, pt_grad, _, wt)
+    mean_grad = sum(inp) do (_, pt_grad, _, wt)
         wt * pt_grad
     end
-    mul!(C_MAS, mean_grad, mean_grad', 0.5, 0.5)
+    C_MAS .= 0.5*C_MAS + 0.5*mean_grad*mean_grad'
     return ModifiedActiveSubspaces(C_MAS)
 end
 

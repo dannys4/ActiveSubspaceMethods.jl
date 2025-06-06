@@ -18,13 +18,15 @@ inp_quad = QuadratureActiveSubspacesInput(borehole_gauss, d, 4)
 as = ActiveSubspaces(inp_quad)
 as_out = as()
 U_perp_as = as_out(r)
+@test size(U_perp_as) == (d, d-r)
 @test norm(I - U_perp_as'U_perp_as)/norm(I(r)) < 1e-15
 
 ##
 asxx = ActiveSubspacesXXManopt(inp_quad)
 asxx_out = asxx()
 U_perp_asxx = asxx_out(r)
-@test norm(I - U_perp_asxx'U_perp_asxx)/norm(I(r)) < 1e-15
+@test size(U_perp_asxx) == (d, d-r)
+@test norm(I - U_perp_asxx'U_perp_asxx)/norm(I(d-r)) < 1e-15
 
 ##
 asxx_bound = ASXX_bound(asxx, U_perp_asxx)

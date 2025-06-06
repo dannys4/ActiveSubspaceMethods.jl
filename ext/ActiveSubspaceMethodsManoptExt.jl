@@ -67,13 +67,14 @@ function (out::ActiveSubspacesXXManoptOutput)(
     r::Int; start_mat=nothing, manopt_opt=quasi_Newton
 )
     @argcheck r > 0 && r <= out.d BoundsError
+    perp_size = out.d-r
     U_perp = get(out.U_perps, r, nothing)
     isnothing(U_perp) || return U_perp
-    U_start = isnothing(start_mat) ? out.start_mat[:, 1:r] : start_mat
-    @argcheck size(U_start) == (out.d, r) DimensionMismatch
+    U_start = isnothing(start_mat) ? out.start_mat[:, r+1:end] : start_mat
+    @argcheck size(U_start) == (out.d, perp_size) DimensionMismatch
     loss = (_, U_perp) -> ASXX_manopt_loss(U_perp, out.as)
     grad_loss = (_, U_perp) -> ASXX_manopt_riem_grad(U_perp, out.as)
-    manifold = Grassmann(out.d, r)
+    manifold = Grassmann(out.d, perp_size)
     U_perp_r = manopt_opt(manifold, loss, grad_loss, U_start)
     out.U_perps[r] = U_perp_r
     return U_perp_r

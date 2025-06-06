@@ -1,4 +1,4 @@
-export GaussianizedUniformInputFunction, GaussianizedUniformInputFunctionAD
+export GaussianizedUniformInputFunction
 
 """
     GaussianizedUniformInputFunction([f0], f1!, bounds; [test_eval])

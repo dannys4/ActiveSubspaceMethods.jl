@@ -1,4 +1,4 @@
-export create_Ur, MC_variance, nested_MC_err
+export create_Ur, MC_variance, nested_MC_err, GaussianizedUniformInputFunctionAD
 
 """
     orthogonalize(U)

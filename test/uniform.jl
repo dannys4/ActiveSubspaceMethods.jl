@@ -10,8 +10,7 @@ const borehole_bounds = NTuple{2,Float64}[
     (63.1, 116), (700, 820), (1_120, 1_680), (9_855, 12_045)
 ]
 d, r = length(borehole_bounds), 3
-borehole_AD = ActiveSubspaceMethods.ADFunctionWrapper(borehole_fcn, d, AutoReverseDiff())
-borehole_gauss = GaussianizedUniformInputFunction(borehole_AD, borehole_bounds)
+borehole_gauss = GaussianizedUniformInputFunctionAD(borehole_fcn, borehole_bounds, AutoReverseDiff())
 inp_quad = QuadratureActiveSubspacesInput(borehole_gauss, d, 4)
 
 ##

@@ -13,5 +13,6 @@ include("methods.jl")
 include("bounds.jl")
 include("uniform_to_gaussian.jl")
 include("autodiff.jl")
+include("utils.jl")
 
 end # ActiveSubspaceMethods

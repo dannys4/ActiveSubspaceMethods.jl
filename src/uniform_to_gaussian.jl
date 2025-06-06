@@ -9,7 +9,7 @@ Take a function that we wish to minimize L2 error w.r.t. uniform measure and tra
 - `bounds::AbstractVector{<:NTuple{2}}` A sequence of (lower, upper) bounds that is as long as the number of inputs.
 - `test_eval::Bool` Whether to test function eval when constructing this functor, default `true`.
 """
-struct GaussianizedUniformInputFunction{F<:Function,V<:AbstractVector{<:NTuple{2}}}
+struct GaussianizedUniformInputFunction{F<:Function,V<:AbstractVector{<:NTuple{2}}}<:Function
     f::F
     bounds::V
     function GaussianizedUniformInputFunction(
@@ -30,14 +30,14 @@ function (fcn!::GaussianizedUniformInputFunction)(x)
 end
 
 function (fcn!::GaussianizedUniformInputFunction)(grad_eval, x)
-    unif_pt = map(eachindex(fcn!.bounds)) do i
-        return normcdf(x[i]) * (fcn!.bounds[i][2] - fcn!.bounds[i][1]) + fcn!.bounds[i][1]
+    unif_pt = map(eachindex(fcn!.bounds)) do dim_idx
+        return normcdf(x[dim_idx]) * (fcn!.bounds[dim_idx][2] - fcn!.bounds[dim_idx][1]) + fcn!.bounds[dim_idx][1]
     end
     eval_pt = fcn!.f(grad_eval, unif_pt)
     for dim_idx in eachindex(fcn!.bounds)
         grad_eval[dim_idx] *=
-            normpdf(x[dim_idx]) * (fcn!.bounds[i][2] - fcn!.bounds[i][1]) +
-            fcn!.bounds[i][1]
+            normpdf(x[dim_idx]) * (fcn!.bounds[dim_idx][2] - fcn!.bounds[dim_idx][1]) +
+            fcn!.bounds[dim_idx][1]
     end
     return eval_pt
 end

@@ -1,4 +1,4 @@
-struct ADFunctionWrapper{F<:Function,P,B<:DifferentiationInterface.AbstractADType}
+struct ADFunctionWrapper{F<:Function,P,B<:DifferentiationInterface.AbstractADType}<:Function
     fcn::F
     prep::P
     backend::B
